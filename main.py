@@ -61,16 +61,17 @@ def receiveGroup(msg):
     if len(whitelist) > 0:
         found = False
         for i in whitelist:
-            iId = itchat.search_chatrooms(name=i)[0]
-            if iId.UserName == groupId:
-                found = True
-                break
+            iId = itchat.search_chatrooms(name=i)
+            for j in iId:
+                if j.NickName == i:
+                    found = True
+                    break
         if found == False:
             return
     if not groupId in groups.keys():
         groups[groupId] = GroupInfo()
         groups[groupId].repeatCount = random.randint(2, 11)
-    if str.lower(msg.text) == str.lower(groups[groupId].lastMessage):
+    if str.strip(str.lower(msg.text)) == str.strip(str.lower(groups[groupId].lastMessage)):
         groups[groupId].count = groups[groupId].count + 1
     else:
         groups[groupId].count = 1
@@ -92,7 +93,7 @@ def receiveGroup(msg):
         groups[groupId].zoom_pwd = ""
     if len(msg.text) >= 9:
         found = False
-        for i in range(0, 9):
+        for i in range(0, 8):
             if not (msg.text[i] >= '0' and msg.text[i] <= '9'):
                 found = True
                 break
@@ -103,10 +104,15 @@ def receiveGroup(msg):
             groups[groupId].zoom_confno = msg.text[0:9]
             print("[ZOOM] confno: " + groups[groupId].zoom_confno)
             groups[groupId].zoom_lastTime = datetime.datetime.now().timestamp()
-            print("[ZOOM] lastTime: " + groups[groupId].zoom_lastTime)
+            print("[ZOOM] lastTime: " + str(groups[groupId].zoom_lastTime))
+            pos = msg.text.find("\n", 9)
+            if pos != -1:
+                msg.text = str.strip(msg.text[pos + 1:len(msg.text)])
+            else:
+                msg.text = str.strip(msg.text[10:len(msg.text)])
     if len(msg.text) >= 6:
         found = False
-        for i in range(0, 6):
+        for i in range(0, 5):
             if not (msg.text[i] >= '0' and msg.text[i] <= '9'):
                 found = True
                 break
@@ -116,7 +122,7 @@ def receiveGroup(msg):
         if found == False:
             groups[groupId].zoom_pwd = msg.text[0:6]
             print("[ZOOM] pwd: " + groups[groupId].zoom_pwd)
-            groups[groupId].zoom_lastTime = datetime.datetime.now().timestamp()
+            groups[groupId].zoom_lastTime = str(datetime.datetime.now().timestamp())
             print("[ZOOM] lastTime: " + groups[groupId].zoom_lastTime)
     if groups[groupId].zoom_confno != "" and groups[groupId].zoom_pwd != "":
         zoom.invoke(zoom.get(groups[groupId].zoom_confno, groups[groupId].zoom_pwd))
